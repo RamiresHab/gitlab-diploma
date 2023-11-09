@@ -1,0 +1,36 @@
+stages:
+  - build
+  - deploy
+variables:
+  DOCKER_IMAGE_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  DOCKER_TLS_CERTDIR: ""
+  KUBECONFIG: "/home/gitlab-runner/.kube/config"
+
+build:
+  services:
+    - name: docker:dind
+  stage: build
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t ""$DOCKER_IMAGE_NAME"" ./docker
+    - docker push "$DOCKER_IMAGE_NAME"
+
+deploy:
+  stage: deploy
+  script:
+    - envsubst < diploma_app.yaml | kubectl apply -f -
+
+
+# docker-build:
+#   # Official docker image.
+#   image: docker:latest
+#   stage: build
+#   services:
+#     - docker:dind
+#   before_script:
+#     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+#   script:
+#     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+#     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+#   except:
+#     - master

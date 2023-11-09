@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diploma-app-nginx
+  labels:
+    app: diploma-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: diploma-app
+  template:
+    metadata:
+      labels:
+        app: diploma-app
+    spec:
+      containers:
+        - name: diploma-app-container
+          image: ${DOCKER_IMAGE_NAME}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: diploma-app-svc
+spec:
+  type: NodePort
+  selector:
+    app: diploma-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+
